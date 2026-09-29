@@ -23,6 +23,7 @@
     "test:unit": "jest test/unit --testEnvironment=node",
     "test:integration": "jest test/integration",
     "test:e2e": "jest test/e2e",
+    "lint": "tsc --noEmit",
     "format": "npx prettier --write .",
     "prerelease": "npm run build",
     "release": "standard-version",

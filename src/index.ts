@@ -118,10 +118,10 @@ export const checkA11y = async (
 ): Promise<void> => {
   const violations = await getViolations(page, context, axeOptions?.axeOptions)
 
-  const impactedViolations = getImpactedViolations(
-    violations,
-    axeOptions?.includedImpacts,
-  )
+  const impacts =
+    axeOptions?.includedImpacts ??
+    (axeOptions?.axeOptions as any)?.includedImpacts
+  const impactedViolations = getImpactedViolations(violations, impacts)
 
   let reporterWithOptions: Promise<void> | Reporter | void | any
 
@@ -134,12 +134,12 @@ export const checkA11y = async (
   } else if (reporter === 'v2') {
     reporterWithOptions = new TerminalReporterV2(axeOptions?.verbose ?? false)
   } else if (reporter === 'html') {
-    if (violations.length > 0) {
+    if (impactedViolations.length > 0) {
       await createHtmlReport({
-        results: { violations },
+        results: { violations: impactedViolations },
         options,
       } as CreateReport)
-      testResultDependsOnViolations(violations, skipFailures)
+      testResultDependsOnViolations(impactedViolations, skipFailures)
     } else console.log('There were no violations to save in report')
   } else if (reporter === 'junit') {
     // Get the system root directory
@@ -163,7 +163,7 @@ export const checkA11y = async (
   if (reporter !== 'html' && reporter !== 'junit')
     await reportViolations(impactedViolations, reporterWithOptions)
 
-  if (reporter === 'v2' || (reporter !== 'html'))
+  if (reporter === 'v2' || reporter !== 'html')
     testResultDependsOnViolations(impactedViolations, skipFailures)
 }
 
